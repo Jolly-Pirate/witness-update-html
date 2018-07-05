@@ -192,7 +192,6 @@
             addFeedback("ERROR on RPC " + rpc + "\n" + error);
           }
           if (result) {
-            //console.log(result.signing_key);
             document.getElementById("current_signing_key").value = result.signing_key;
           }
         });
@@ -208,7 +207,6 @@
         password = document.getElementById("password").value;
         inputkey = document.getElementById("wif").value.trim();
         fee = "0.000 STEEM"; // must set the fee or we get: "transaction.operations = witness_update,[object Object]	 cause: witness_update.fee = 0	 cause: Expecting amount like '99.000 SYMBOL', instead got '0'  
-        //props = {"sbd_interest_rate": config.sbd_interest_rate * 100, "maximum_block_size": config.maximum_block_size, "account_creation_fee": config.account_creation_fee};
         props = {"sbd_interest_rate": sbd_interest_rate * 100, "maximum_block_size": maximum_block_size, "account_creation_fee": account_creation_fee};
 
         rpc = document.getElementById("rpc").value;
