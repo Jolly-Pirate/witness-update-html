@@ -1,0 +1,22 @@
+{
+  "owner": "witnessname",
+  "url": "https://steemit.com/witness-category/@witnessname/witness-application-link",
+  "account_creation_fee": "0.100 STEEM",
+  "maximum_block_size": 65536,
+  "sbd_interest_rate": 0,
+  "wif": "5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "signing_pubkeys": [
+    ["STMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "location or comment 1"],
+    ["STMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "location or comment 2"],
+    ["STMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "location or comment 3"]
+  ],
+  "rpc_nodes": [
+    "https://api.steemit.com",
+    "wss://rpc.buildteam.io",
+    "wss://rpc.steemviz.com", 
+    "wss://steemd.minnowsupportproject.org",
+    "wss://steemd.pevo.science",
+    "wss://steemd.privex.io",
+    "wss://wallet.steem.ws" 
+  ]
+}

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Witness Update Tool</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!--script src="https://cdn.steemjs.com/lib/latest/steem.min.js"></script-->
+    <script src="steem.min.js"></script>
+
+    <style>
+      a {outline: none;}
+    </style>
+  </head>
+
+  <body style="padding:5px;">
+
+    <ul class="nav nav-tabs" style="width:550px;">
+      <li class="active"><a data-toggle="tab" href="#sectionA"><i class="fa fa-send"></i> Broadcast Command</a></li>
+      <li><a data-toggle="tab" href="#sectionB"><i class="fa fa-key"></i> Encryption Tool</a></li>
+    </ul>
+
+    <div class="tab-content">
+      <!-- tab 1 -->
+      <div id="sectionA" class="tab-pane fade in active">
+        <div class="panel panel-info" style="width:550px;">
+          <div class="panel-heading" style="text-align: center">    
+            <div id="loading" style="float:right;" hidden>
+              <i class="fa fa-spin fa-spinner" style="font-size:50px; z-index:10;"></i>
+            </div>
+            <h3>Witness Update Tool</h3>
+            <sub style="float:right;">by <a title="@drakos" href="https://steemit.com/@drakos" target="_blank" rel="noopener noreferrer">@drakos</a></sub>
+          </div>
+          <div class="panel-body">
+            <form id="mainForm">
+              <input type="password" class="form-control input-sm" autocomplete="off" id="password" placeholder="Active Key Decryption Password">
+              <input type="text" class="form-control input-sm" autocomplete="off" id="owner" style="width:150px; display:inline;" placeholder="Owner" maxlength=16 onkeyup="this.value = this.value.replace(/[^a-z0-9|\.|-]/g, ''); checkFields();">
+              <input type="text" class="form-control input-sm" autocomplete="off" id="account_creation_fee" style="width:120px; display:inline;" placeholder="Acc Creation Fee" onkeyup="checkFields();">
+              <input type="text" class="form-control input-sm" autocomplete="off" id="maximum_block_size" style="width:106px; display:inline;" placeholder="Max Block Size" maxlength=6 onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); checkFields();">
+              <input type="text" class="form-control input-sm" autocomplete="off" id="sbd_interest_rate" style="width:80px; display:inline;" placeholder="SBD APR" maxlength=3 onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); checkFields();">
+              <input type="text" class="form-control input-sm" autocomplete="off" id="url" placeholder="URL" onkeyup="checkFields();">
+              <input type="text" class="form-control input-sm" autocomplete="off" id="wif" placeholder="Active Key (WIF) [plaintext or encrypted]" onkeyup="checkFields();">
+              <br>
+              <small>Current signing pubkey (on blockchain)</small>
+              <input type="text" class="form-control input-sm" id="current_signing_key" placeholder="Current signing pubkey" disabled>
+              <small>Select new signing pubkey</small>
+              <select class="form-control input-sm" style="border:1px solid red; font-family:courier" id="block_signing_key" oninput='document.getElementById("block_signing_key_manual").value = "";' onchange="checkFields();">
+                <option selected disabled>-- select new signing pubkey --</option>
+              </select>
+              <input type="text" class="form-control input-sm" id="block_signing_key_manual" placeholder="OR enter signing pubkey" oninput='document.getElementById("block_signing_key").selectedIndex=0; checkFields();'>
+              <br>
+              <select class="form-control input-sm" id="rpc" style="border:1px solid blue;" onchange="checkFields();">
+                <option selected disabled>-- select RPC node --</option>
+              </select>
+              <textarea class="form-control input-sm" rows="5" id="feedback" placeholder="Feeback Log" style="resize:vertical;"></textarea>
+              <button type="button" class="btn btn-primary" onClick="loadSettings();"><i class="fa fa-sign-in"></i> Load Settings</button>
+              <button type="button" class="btn btn-primary" onClick="clearAll();"><i class="fa fa-eraser"></i> Clear</button>
+              <button type="button" class="btn btn-success" onClick="witnessUpdate();" id="updateWitness" disabled><i class="fa fa-send"></i> Update Witness</button>
+              <button type="button" class="btn btn-danger" onClick="witnessDisable();" id="disableWitness"><i class="fa fa-hand-paper-o"></i> Disable Witness</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- tab 2 -->
+      <div id="sectionB" class="tab-pane fade">
+        <div class="panel panel-info" style="width:550px;">
+          <div class="panel-heading" style="text-align: center">
+            <h3>Encryption Tool</h3>
+            <sub style="float:right;">by <a title="@drakos" href="https://steemit.com/@drakos" target="_blank" rel="noopener noreferrer">@drakos</a></sub>
+          </div>
+          <div class="panel-body">
+            <form id="encryptionForm">
+              <input type="text" class="form-control" autocomplete="off" id="text" placeholder="Text to encrypt" onkeyup="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');">
+              <input type="text" class="form-control" autocomplete="off" id="pass" placeholder="Password">
+              <br>
+              <!-- type="button": normal button and binding onClick event -->
+              <button type="button" class="btn btn-primary" onClick="clearEncryption();" style="float:right;"><i class="fa fa-eraser"></i> Clear</button>
+              <button type="button" class="btn btn-primary" onClick="encrypt();"><i class="fa fa-lock"></i> Encrypt</button>
+              <textarea class="form-control" rows="3" id="encrypted" placeholder="Encrypted text" style="resize:none; white-space: wrap; overflow: auto;" onclick="this.focus(); this.select();" readonly></textarea>
+              <br>
+              <button type="button" class="btn btn-success" onClick="decrypt();"><i class="fa fa-unlock"></i> Decrypt</button>
+              <textarea class="form-control" rows="1" id="decrypted" placeholder="Decrypted text" style="resize:none; white-space: wrap; overflow: auto;" onclick="this.focus(); this.select();" readonly></textarea>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      //var fee, props, block_signing_key, rpc, sel, config, password, wif;
+
+      loadJSON("config.json",
+              function (data) {
+                config = data;
+              },
+              function (xhr) {
+                console.error(xhr);
+              }
+      );
+
+      // dynamically generate the pubkey selection list from signing_pubkeys array
+      sel = document.getElementById('block_signing_key');
+      for (var i = 0; i < config.signing_pubkeys.length; i++) {
+        var opt = document.createElement('option');
+        opt.innerHTML = config.signing_pubkeys[i][0] + " " + config.signing_pubkeys[i][1];
+        opt.value = config.signing_pubkeys[i][0] + " " + config.signing_pubkeys[i][1];
+        sel.appendChild(opt);
+      }
+
+      // dynamically generate the rpc selection list from rpc_nodes array
+      sel = document.getElementById('rpc');
+      for (var i = 0; i < config.rpc_nodes.length; i++) {
+        var opt = document.createElement('option');
+        opt.innerHTML = config.rpc_nodes[i];
+        opt.value = config.rpc_nodes[i];
+        sel.appendChild(opt);
+      }
+
+      loadSettings(); // load the values from the config.json
+      getFormValues();
+
+      /* functions */
+
+      function checkFields() {
+        var ck_owner = document.getElementById("owner").value;
+        var ck_url = document.getElementById("url").value;
+        var ck_creationfee = document.getElementById("account_creation_fee").value;
+        var ck_blocksize = document.getElementById("maximum_block_size").value;
+        var ck_apr = document.getElementById("sbd_interest_rate").value;
+        var ck_wif = document.getElementById("wif").value;
+
+        if (!document.getElementById("block_signing_key_manual").value && !document.getElementById("block_signing_key").selectedIndex ||
+                !document.getElementById("rpc").selectedIndex ||
+                !ck_owner || !ck_url || !ck_creationfee || !ck_blocksize || !ck_apr || !ck_wif) {
+          document.getElementById('updateWitness').disabled = true;
+        } else if (!document.getElementById("block_signing_key_manual").value && document.getElementById("block_signing_key").selectedIndex ||
+                document.getElementById("block_signing_key_manual").value && !document.getElementById("block_signing_key").selectedIndex &&
+                document.getElementById("rpc").selectedIndex) {
+          document.getElementById('updateWitness').disabled = false;
+        }
+      }
+
+      function loadJSON(filePath, success, error) {
+        var xhr = new XMLHttpRequest();
+        if (xhr.overrideMimeType) { // fix for: XML Parsing Error: not well-formed
+          xhr.overrideMimeType("application/json");
+        }
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+              if (success)
+                success(JSON.parse(xhr.responseText));
+            } else {
+              if (error)
+                error(xhr);
+            }
+          }
+        };
+        xhr.open("GET", filePath, false); // set to false for synchronous
+        xhr.send();
+      }
+
+      function loadSettings() {
+        document.getElementById("owner").value = config.owner;
+        document.getElementById("url").value = config.url;
+        document.getElementById("account_creation_fee").value = config.account_creation_fee;
+        document.getElementById("maximum_block_size").value = config.maximum_block_size;
+        document.getElementById("sbd_interest_rate").value = config.sbd_interest_rate;
+        document.getElementById("wif").value = config.wif;
+
+        if (document.getElementById("rpc").selectedIndex === 0) {
+          document.getElementById("rpc").selectedIndex = 1;
+        }
+        document.getElementById("block_signing_key_manual").value = "";
+
+        getCurrentKey();
+      }
+
+      function getCurrentKey() {
+        document.getElementById("current_signing_key").value = "";
+        clearFeedback();
+        rpc = document.getElementById("rpc").value;
+        //alert(rpc);
+        steem.api.setOptions({url: rpc});
+        steem.api.getWitnessByAccount(config.owner, function (error, result) {
+          if (error) {
+            console.log(error);
+            addFeedback("ERROR on RPC " + rpc + "\n" + error);
+          }
+          if (result) {
+            //console.log(result.signing_key);
+            document.getElementById("current_signing_key").value = result.signing_key;
+          }
+        });
+      }
+
+      function getFormValues() {
+        owner = document.getElementById("owner").value.trim();
+        url = document.getElementById("url").value.trim();
+        account_creation_fee = document.getElementById("account_creation_fee").value.trim();
+        maximum_block_size = parseInt(document.getElementById("maximum_block_size").value); // must convert to integer, or error
+        sbd_interest_rate = parseInt(document.getElementById("sbd_interest_rate").value);
+        //wif = document.getElementById("wif").value.trim();
+        password = document.getElementById("password").value;
+        inputkey = document.getElementById("wif").value.trim();
+        fee = "0.000 STEEM"; // must set the fee or we get: "transaction.operations = witness_update,[object Object]	 cause: witness_update.fee = 0	 cause: Expecting amount like '99.000 SYMBOL', instead got '0'  
+        //props = {"sbd_interest_rate": config.sbd_interest_rate * 100, "maximum_block_size": config.maximum_block_size, "account_creation_fee": config.account_creation_fee};
+        props = {"sbd_interest_rate": sbd_interest_rate * 100, "maximum_block_size": maximum_block_size, "account_creation_fee": account_creation_fee};
+
+        rpc = document.getElementById("rpc").value;
+
+        if (document.getElementById("block_signing_key").selectedIndex > 0) {
+          block_signing_key = document.getElementById("block_signing_key").value;
+        } else {
+          block_signing_key = document.getElementById("block_signing_key_manual").value;
+        }
+      }
+
+      function witnessDisable() {
+        steem.api.setOptions({url: rpc});
+        document.getElementById("block_signing_key").selectedIndex = 0;
+        document.getElementById("block_signing_key_manual").value = "STM1111111111111111111111111111111114T1Anm";
+        witnessUpdate();
+      }
+
+      function witnessUpdate() {
+        clearFeedback();
+        getFormValues();
+        wif = checkWIF(inputkey, password);
+
+        if (wif) { // broadcast if wif is valid
+          addFeedback("Broadcasting command...");
+          block_signing_key = block_signing_key.split(" ")[0]; // extract the first string from the split array
+
+          document.getElementById("loading").hidden = false;
+          steem.api.setOptions({url: rpc});
+
+          steem.broadcast.witnessUpdate(wif, owner, url, block_signing_key, props, fee, function (error, response) {
+            console.log(error, response);
+            if (error) {
+              console.log(error);
+              addFeedback("ERROR on RPC " + rpc + "\n" + error);
+            }
+            if (response) {
+              getCurrentKey();
+              addFeedback("SUCCESS\n" + JSON.stringify(response, null, 1)); // spacing level = 1, similar to using " "
+            }
+            document.getElementById("loading").hidden = true; //put it here, wait for the response then hide it
+          });
+
+        } else {
+          appendFeedback("Didn't broadcast. Check WIF or decryption password.");
+          document.getElementById("loading").hidden = true;
+        }
+      }
+
+      function checkWIF(string, password) {
+        if (steem.auth.isWif(string)) {
+          return string;
+        }
+        if (string.includes("U2FsdGVkX1")) {
+          var bytes = CryptoJS.AES.decrypt(string, password);
+          try {
+            var decrypted = bytes.toString(CryptoJS.enc.Utf8);
+          } catch (e) {
+            console.error(e); // for debugging
+            addFeedback(e + "\n");
+          }
+          if (steem.auth.isWif(decrypted)) {
+            return decrypted;
+          } else {
+            appendFeedback("Wrong decryption password.\n");
+            return null;
+          }
+        } else {
+          appendFeedback("Invalid WIF.\n");
+          return null;
+        }
+      }
+
+      function clearAll() {
+        document.getElementById("mainForm").reset();
+        document.getElementById("updateWitness").disabled = true;
+        clearFeedback();
+      }
+
+      function clearFeedback() {
+        document.getElementById("feedback").innerHTML = "";
+      }
+
+      function addFeedback(string) {
+        document.getElementById("feedback").innerHTML = string;
+      }
+
+      function appendFeedback(string) {
+        document.getElementById("feedback").innerHTML += string;
+      }
+
+      function clearEncryption() {
+        document.getElementById("encryptionForm").reset();
+      }
+
+      function encrypt() {
+        document.getElementById("encrypted").value = "";
+        var text = document.getElementById("text").value;
+        var password = document.getElementById("pass").value;
+        if (text && password) {
+          var encrypted = CryptoJS.AES.encrypt(text, password);
+          //var wordArray = CryptoJS.enc.Utf8.parse(encrypted);
+          //var base64 = CryptoJS.enc.Base64.stringify(wordArray);
+          document.getElementById("encrypted").value = encrypted;
+          document.getElementById("decrypted").value = "";
+        }
+      }
+      function decrypt() {
+        document.getElementById("decrypted").value = "";
+        // https://eclipsesource.com/blogs/2016/06/08/decoding-symmetric-cyphers-with-crypto-js/
+        // don't assume that what you decipher can always be converted to UTF-8
+        // var decrypted = CryptoJS.AES.decrypt(document.getElementById("encrypted").value, document.getElementById("pass").value).toString(CryptoJS.enc.Utf8);
+        var text = document.getElementById("encrypted").value;
+        var password = document.getElementById("pass").value;
+        if (text && password) {
+          var bytes = CryptoJS.AES.decrypt(text, password);
+          try {
+            var decrypted = bytes.toString(CryptoJS.enc.Utf8);
+          } catch (e) {
+            console.error(e);
+            decrypted = e;
+          }
+          document.getElementById("decrypted").value = decrypted;
+        }
+      }
+    </script>
+
+  </body>
+</html>
