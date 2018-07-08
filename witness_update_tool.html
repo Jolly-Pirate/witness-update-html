@@ -5,7 +5,7 @@
     <title>Witness Update Tool</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -28,10 +28,10 @@
     <div class="tab-content">
       <!-- tab 1 -->
       <div id="sectionA" class="tab-pane fade in active">
-        <div class="panel panel-info" style="width:550px;">
+        <div class="panel panel-info" style="width:550px; position: relative;">
           <div class="panel-heading" style="text-align: center">    
-            <div id="loading" style="float:right;" hidden>
-              <i class="fa fa-spin fa-spinner" style="font-size:50px; z-index:10;"></i>
+            <div id="loading" style="position:absolute; top:25px; right:0px;" hidden>
+              <i class="fa fa-spin fa-spinner" style="font-size:25px;"></i>
             </div>
             <h3>Witness Update Tool</h3>
             <sub style="float:right;">by <a title="@drakos" href="https://steemit.com/@drakos" target="_blank" rel="noopener noreferrer">@drakos</a></sub>
@@ -81,10 +81,10 @@
               <!-- type="button": normal button and binding onClick event -->
               <button type="button" class="btn btn-primary" onClick="clearEncryption();" style="float:right;"><i class="fa fa-eraser"></i> Clear</button>
               <button type="button" class="btn btn-primary" onClick="encrypt();"><i class="fa fa-lock"></i> Encrypt</button>
-              <textarea class="form-control" rows="3" id="encrypted" placeholder="Encrypted text" style="resize:none; white-space: wrap; overflow: auto;" onclick="this.focus(); this.select();" readonly></textarea>
+              <textarea class="form-control" rows="3" id="encrypted" placeholder="Encrypted text" style="resize:none;" onclick="this.focus(); this.select();" readonly></textarea>
               <br>
               <button type="button" class="btn btn-success" onClick="decrypt();"><i class="fa fa-unlock"></i> Decrypt</button>
-              <textarea class="form-control" rows="1" id="decrypted" placeholder="Decrypted text" style="resize:none; white-space: wrap; overflow: auto;" onclick="this.focus(); this.select();" readonly></textarea>
+              <textarea class="form-control" rows="1" id="decrypted" placeholder="Decrypted text" style="resize:none;" onclick="this.focus(); this.select();" readonly></textarea>
             </form>
           </div>
         </div>
@@ -92,7 +92,6 @@
     </div>
 
     <script>
-
       loadJSON("config.json",
               function (data) {
                 config = data;
@@ -203,7 +202,6 @@
         account_creation_fee = document.getElementById("account_creation_fee").value.trim();
         maximum_block_size = parseInt(document.getElementById("maximum_block_size").value); // must convert to integer, or error
         sbd_interest_rate = parseInt(document.getElementById("sbd_interest_rate").value);
-        //wif = document.getElementById("wif").value.trim();
         password = document.getElementById("password").value;
         inputkey = document.getElementById("wif").value.trim();
         fee = "0.000 STEEM"; // must set the fee or we get: "transaction.operations = witness_update,[object Object]	 cause: witness_update.fee = 0	 cause: Expecting amount like '99.000 SYMBOL', instead got '0'  
@@ -261,6 +259,8 @@
           return string;
         }
         if (string.includes("U2FsdGVkX1")) {
+          var params = {keySize: 512 / 32, iterations: 5000};
+          var password = CryptoJS.PBKDF2(password, 'salt', params).toString();
           var bytes = CryptoJS.AES.decrypt(string, password);
           try {
             var decrypted = bytes.toString(CryptoJS.enc.Utf8);
@@ -307,9 +307,11 @@
         var text = document.getElementById("text").value;
         var password = document.getElementById("pass").value;
         if (text && password) {
+          // hash the password with high iterations for increased security against bruteforcing
+          var params = {keySize: 512 / 32, iterations: 5000};
+          var password = CryptoJS.PBKDF2(password, 'salt', params).toString();
+
           var encrypted = CryptoJS.AES.encrypt(text, password);
-          //var wordArray = CryptoJS.enc.Utf8.parse(encrypted);
-          //var base64 = CryptoJS.enc.Base64.stringify(wordArray);
           document.getElementById("encrypted").value = encrypted;
           document.getElementById("decrypted").value = "";
         }
@@ -318,10 +320,12 @@
         document.getElementById("decrypted").value = "";
         // https://eclipsesource.com/blogs/2016/06/08/decoding-symmetric-cyphers-with-crypto-js/
         // don't assume that what you decipher can always be converted to UTF-8
-        // var decrypted = CryptoJS.AES.decrypt(document.getElementById("encrypted").value, document.getElementById("pass").value).toString(CryptoJS.enc.Utf8);
         var text = document.getElementById("encrypted").value;
         var password = document.getElementById("pass").value;
         if (text && password) {
+          var params = {keySize: 512 / 32, iterations: 5000};
+          var password = CryptoJS.PBKDF2(password, 'salt', params).toString();
+
           var bytes = CryptoJS.AES.decrypt(text, password);
           try {
             var decrypted = bytes.toString(CryptoJS.enc.Utf8);
