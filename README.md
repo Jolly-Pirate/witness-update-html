@@ -28,7 +28,7 @@ Install Steem-JS
 ```
 git clone https://github.com/steemit/steem-js.git
 cd steem-js
-curl https://patch-diff.githubusercontent.com/raw/steemit/steem-js/pull/390.patch | git am
+curl https://patch-diff.githubusercontent.com/raw/steemit/steem-js/pull/390.patch | git apply
 npm install
 ```
 ***
