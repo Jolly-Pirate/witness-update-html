@@ -57,4 +57,4 @@ It's straighforward and self-explanatory.
 I encourage every witness to learn and understand how things are done manually **first** (cli_wallet, compiling, etc) before using convenience tools like this one. I hope you like it.
 
 ## Disclaimer
-I'm not responsible for any bugs, misuse or potential bad outcome. I have tested the code extensively and didn't find any issues. Nevertheless, unmerged pull requests are experimental so use at your own risk. When the fix is approved, I'll update the repo to enable the `<script src="https://cdn.steemjs.com/lib/latest/steem.min.js"></script>` line, instead of `<script src="steem.min.js"></script>`.
+I'm not responsible for any bugs, misuse or potential bad outcome. I have tested the code extensively and didn't find any issues.
