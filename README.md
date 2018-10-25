@@ -15,25 +15,6 @@
 - Bootstrap
 - Font Awesome
 
-Since the fix hasn't been reviewed and merged yet by Steemit's developers, you can either use the included `steem.min.js` I built, or build your own. I have used the latest Steem-JS v0.7.1 on Ubuntu 16.04:
-
-Install the latest NodeJS v10.x (10.6 at time of this release)
-```
-sudo apt-get purge -y --auto-remove nodejs npm
-curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-***
-Install Steem-JS
-```
-git clone https://github.com/steemit/steem-js.git
-cd steem-js
-curl https://patch-diff.githubusercontent.com/raw/steemit/steem-js/pull/390.patch | git apply
-npm install
-```
-***
-Then copy `/dist/steem.min.js` into the same folder as the html file.
-
 ## Setup
 `git clone https://github.com/Jolly-Pirate/witness-update-html.git` or download the zipped files.
 
