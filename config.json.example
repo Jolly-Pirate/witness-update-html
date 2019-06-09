@@ -12,11 +12,7 @@
   ],
   "rpc_nodes": [
     "https://api.steemit.com",
-    "wss://rpc.buildteam.io",
-    "wss://rpc.steemviz.com", 
-    "https://steemd.minnowsupportproject.org",
-    "wss://steemd.pevo.science",
-    "wss://steemd.privex.io",
-    "wss://wallet.steem.ws" 
+    "https://anyx.io",
+    "https://steemd.minnowsupportproject.org"
   ]
 }
