@@ -10,10 +10,8 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <script src="https://cdn.jsdelivr.net/npm/steem/dist/steem.min.js"></script>
-    <!--script src="https://cdn.steemjs.com/lib/latest/steem.min.js"></script-->
-    <!--script src="steem.min.js"></script-->
-
+    <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+    
     <style>
       a {outline: none;}
     </style>
@@ -35,7 +33,7 @@
               <i class="fa fa-spin fa-spinner" style="font-size:25px;"></i>
             </div>
             <h3>Witness Update Tool</h3>
-            <sub style="float:right;">by <a title="@drakos" href="https://steemit.com/@drakos" target="_blank" rel="noopener noreferrer">@drakos</a></sub>
+            <sub style="float:right;">by <a title="@drakos" href="https://hive.blog/@drakos" target="_blank" rel="noopener noreferrer">@drakos</a></sub>
           </div>
           <div class="panel-body">
             <form id="mainForm">
@@ -43,7 +41,7 @@
               <input type="text" class="form-control input-sm" autocomplete="off" id="owner" style="width:150px; display:inline;" placeholder="Owner" maxlength=16 onkeyup="this.value = this.value.replace(/[^a-z0-9|\.|-]/g, ''); checkFields();">
               <input type="text" class="form-control input-sm" autocomplete="off" id="account_creation_fee" style="width:120px; display:inline;" placeholder="Acc Creation Fee" onkeyup="checkFields();">
               <input type="text" class="form-control input-sm" autocomplete="off" id="maximum_block_size" style="width:106px; display:inline;" placeholder="Max Block Size" maxlength=6 onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); checkFields();">
-              <input type="text" class="form-control input-sm" autocomplete="off" id="sbd_interest_rate" style="width:80px; display:inline;" placeholder="SBD APR" maxlength=3 onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); checkFields();">
+              <input type="text" class="form-control input-sm" autocomplete="off" id="hbd_interest_rate" style="width:80px; display:inline;" placeholder="HBD APR" maxlength=3 onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); checkFields();">
               <input type="text" class="form-control input-sm" autocomplete="off" id="url" placeholder="URL" onkeyup="checkFields();">
               <input type="text" class="form-control input-sm" autocomplete="off" id="wif" placeholder="Active Key (WIF) [plaintext or encrypted]" onkeyup="checkFields();">
               <br>
@@ -72,7 +70,7 @@
         <div class="panel panel-info" style="width:550px;">
           <div class="panel-heading" style="text-align: center">
             <h3>Encryption Tool</h3>
-            <sub style="float:right;">by <a title="@drakos" href="https://steemit.com/@drakos" target="_blank" rel="noopener noreferrer">@drakos</a></sub>
+            <sub style="float:right;">by <a title="@drakos" href="https://hive.blog/@drakos" target="_blank" rel="noopener noreferrer">@drakos</a></sub>
           </div>
           <div class="panel-body">
             <form id="encryptionForm">
@@ -130,7 +128,7 @@
         var ck_url = document.getElementById("url").value;
         var ck_creationfee = document.getElementById("account_creation_fee").value;
         var ck_blocksize = document.getElementById("maximum_block_size").value;
-        var ck_apr = document.getElementById("sbd_interest_rate").value;
+        var ck_apr = document.getElementById("hbd_interest_rate").value;
         var ck_wif = document.getElementById("wif").value;
 
         if (!document.getElementById("block_signing_key_manual").value && !document.getElementById("block_signing_key").selectedIndex ||
@@ -169,7 +167,7 @@
         document.getElementById("url").value = config.url;
         document.getElementById("account_creation_fee").value = config.account_creation_fee;
         document.getElementById("maximum_block_size").value = config.maximum_block_size;
-        document.getElementById("sbd_interest_rate").value = config.sbd_interest_rate;
+        document.getElementById("hbd_interest_rate").value = config.hbd_interest_rate;
         document.getElementById("wif").value = config.wif;
 
         if (document.getElementById("rpc").selectedIndex === 0) {
@@ -202,11 +200,11 @@
         url = document.getElementById("url").value.trim();
         account_creation_fee = document.getElementById("account_creation_fee").value.trim();
         maximum_block_size = parseInt(document.getElementById("maximum_block_size").value); // must convert to integer, or error
-        sbd_interest_rate = parseInt(document.getElementById("sbd_interest_rate").value);
+        sbd_interest_rate = parseInt(document.getElementById("hbd_interest_rate").value);
         password = document.getElementById("password").value;
         inputkey = document.getElementById("wif").value.trim();
-        fee = "0.000 STEEM"; // must set the fee or we get: "transaction.operations = witness_update,[object Object]	 cause: witness_update.fee = 0	 cause: Expecting amount like '99.000 SYMBOL', instead got '0'  
-        props = {"sbd_interest_rate": sbd_interest_rate * 100, "maximum_block_size": maximum_block_size, "account_creation_fee": account_creation_fee};
+        fee = "0.000 HIVE"; // must set the fee or we get: "transaction.operations = witness_update,[object Object]	 cause: witness_update.fee = 0	 cause: Expecting amount like '99.000 SYMBOL', instead got '0'  
+        props = {"hbd_interest_rate": sbd_interest_rate * 100, "maximum_block_size": maximum_block_size, "account_creation_fee": account_creation_fee};
 
         rpc = document.getElementById("rpc").value;
 
@@ -256,7 +254,7 @@
       }
 
       function checkWIF(string, password) {
-        if (steem.auth.isWif(string)) {
+        if (hive.auth.isWif(string)) {
           return string;
         }
         if (string.includes("U2FsdGVkX1")) {
@@ -269,7 +267,7 @@
             console.error(e); // for debugging
             addFeedback(e + "\n");
           }
-          if (steem.auth.isWif(decrypted)) {
+          if (hive.auth.isWif(decrypted)) {
             return decrypted;
           } else {
             appendFeedback("Wrong decryption password.\n");
