@@ -1,4 +1,4 @@
-# STEEM Witness Update HTML Tool
+# HIVE Witness Update HTML Tool
 
 ## Features
 - HTML for ease of use in any modern browser.
@@ -9,7 +9,7 @@
 - Witness disabling.
 
 ## Requirements
-- Steem-JS
+- Hive-JS
 - Crypto-JS
 - JQuery
 - Bootstrap
